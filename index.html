@@ -1,24 +1,381 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>:3</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #333;
-            font-family: Arial, sans-serif;
-            color: #f0f0f0;
-            font-size: 7rem;
+      body {
+        background: #202020;
+        color: white;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        text-align: center;
+        overflow: hidden;
+      }
+      header {
+        border-bottom: 1px solid #919191;
+      }
+      .money-wasted {
+        color: #07ca00;
+        transition: all 0.2s ease;
+        font-weight: bold;
+      }
+      .money-wasted:hover {
+        transform: scale(1.05);
+        text-shadow: 0 0 10px #07ca00;
+      }
+      .najnizsza-earnings {
+        color: #0070f3;
+        transition: all 0.2s ease;
+        font-weight: bold;
+      }
+      .najnizsza-earnings:hover {
+        transform: scale(1.05);
+        text-shadow: 0 0 10px #0070f3;
+      }
+      .x-najnizszej-krajowej {
+        color: #ff0000;
+        transition: all 0.3s ease;
+        font-weight: bold;
+      }
+      .stats {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        width: 300px;
+        margin: 0 auto;
+        border: 1px solid rgb(112, 112, 112);
+        border-radius: 21px;
+        margin-bottom: 21px;
+      }
+      .pulse {
+        animation: pulse 0.5s infinite;
+      }
+      .pulse-intense {
+        animation: pulse-intense 0.3s infinite;
+      }
+      .shrink {
+        animation: shrink 0.6s infinite;
+      }
+      .glow-red {
+        text-shadow: 0 0 5px #ff0000;
+      }
+      .glow-green {
+        text-shadow: 0 0 5px #00ff00;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
         }
+        50% {
+          transform: scale(1.02);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      @keyframes pulse-intense {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      @keyframes shrink {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(0.9);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      .money-wasted-per-h,
+      .x-najnizszej-krajowej,
+      .stoper-div {
+        display: flex;
+        flex-direction: column;
+        gap: 0px;
+        * {
+          margin: 0;
+        }
+      }
+      input {
+        border: none;
+        border-radius: 7px;
+        padding: 3px 7px;
+        text-align: center;
+      }
+      button {
+        border: none;
+        background: #07ca00;
+        color: white;
+        padding: 7px 14px;
+        border-radius: 21px;
+        margin: 7px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      }
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+      }
+      button.running {
+        background: #ff6600;
+      }
+      button.paused {
+        background: #666666;
+      }
+      @keyframes button-pulse {
+        0%,
+        100% {
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        50% {
+          box-shadow: 0 2px 15px rgba(255, 102, 0, 0.6);
+        }
+      }
     </style>
-</head>
-<body>
-    <h1>:3</h1>
-</body>
+  </head>
+  <body>
+    <header>
+      <h1>Money Waste Timer</h1>
+    </header>
+
+    <div class="stoper-div">
+      <small>Wasted for:</small>
+      <h2 class="stoper">00:00:00</h2>
+    </div>
+    <p class="money-wasted">0 zl wasted</p>
+    <p class="najnizsza-earnings">0 zl earned (najniższa)</p>
+    <div class="stats">
+      <p class="money-wasted-per-h">0 zl</p>
+      <h4 class="x-najnizszej-krajowej pulse">0.00x!</h4>
+    </div>
+    <div>
+      <label for="">Czynsz miesięczny: </label>
+      <input
+        type="number"
+        placeholder="Czynsz miesięczny..."
+        class="rent"
+        value="2700"
+      />
+    </div>
+    <div>
+      <label for="">Ilość studentów: </label>
+      <input
+        type="number"
+        placeholder="Amount of students..."
+        class="studentCount"
+        value="30"
+      />
+    </div>
+    <button class="play-btn">Start</button>
+    <button class="stop-btn">Pause</button>
+    <script>
+      let currentDate = new Date();
+      let hours = String(currentDate.getHours()).padStart(2, "0");
+      let minutes = String(currentDate.getMinutes()).padStart(2, "0");
+      let seconds = String(currentDate.getSeconds()).padStart(2, "0");
+      const zegarTxt = document.querySelector(".zegar");
+      let studentCount = document.querySelector(".studentCount").value;
+      let czynszPerMonth = document.querySelector(".rent").value;
+      const moneyWasted = document.querySelector(".money-wasted");
+      const moneyWastedPerH = document.querySelector(".money-wasted-per-h");
+      const stoper = document.querySelector(".stoper");
+      const playBtn = document.querySelector(".play-btn");
+      const stopBtn = document.querySelector(".stop-btn");
+      const xNajnizszejKrajowej = document.querySelector(
+        ".x-najnizszej-krajowej"
+      );
+      let isRunning = false;
+      let totalMoneyWasted = 0;
+      let totalNajnizszaEarnings = 0;
+      let najnizszaKrajowa = 30.5; // hourly minimum wage
+      let timerSeconds = 0;
+      let timerInterval;
+      let najnizszaKrajowaPerSecond = najnizszaKrajowa / 3600; // minimum wage earning per second
+      const najnizszaEarnings = document.querySelector(".najnizsza-earnings");
+
+      // Ratio thresholds and their visual styles (ordered from highest to lowest)
+      const ratioConfig = [
+        {
+          threshold: 15,
+          message: "GETTING HOMELESS!!!",
+          color: "#ff0000",
+          classes: ["pulse-intense", "glow-red"],
+        },
+        {
+          threshold: 10,
+          message: "HOLY SHIT!!!",
+          color: "#ff0000",
+          classes: ["pulse-intense", "glow-red"],
+        },
+        {
+          threshold: 3,
+          message: "EXTREME WASTE",
+          color: "#ff0000",
+          classes: ["pulse", "glow-red"],
+        },
+        {
+          threshold: 2,
+          message: "heavy waste",
+          color: "#ff0000",
+          classes: ["pulse"],
+        },
+        {
+          threshold: 1.5,
+          message: "wasting money",
+          color: "#ff0000",
+          classes: [],
+        },
+        {
+          threshold: 1.2,
+          message: "slight waste",
+          color: "#ff6666",
+          classes: [],
+        },
+        {
+          threshold: 0.5,
+          message: "getting there",
+          color: "#aaaaaa",
+          classes: [],
+        },
+        { threshold: 0, message: "perfect", color: "#888888", classes: [] },
+      ];
+
+      // Initial display
+      moneyWasted.textContent = "0.00 zl wasted";
+
+      // Calculation: monthly rent / 4.33 weeks per month / 5 school days / 7 hours = hourly cost
+      // 4.33 weeks = average weeks per month (52 weeks / 12 months)
+      const czynszPerWeek = czynszPerMonth / 4.33; // cost per week
+      const czynszPerSchoolWeek = czynszPerWeek; // same, but only counting school days
+      const czynszPerSchoolDay = czynszPerSchoolWeek / 5; // cost per school day (5 days)
+      const czynszPerHour = czynszPerSchoolDay / 7; // cost per hour during school (7 hours)
+      const czynszPerSecond = czynszPerHour / 3600; // cost per second
+
+      moneyWastedPerH.innerHTML =
+        (czynszPerHour * studentCount).toFixed(2) +
+        " zl <small>wasted per hour!</small>";
+
+      // Initial display for earnings
+      najnizszaEarnings.textContent = "0.00 zl earned (najniższa)";
+      setInterval(() => {
+        currentDate = new Date();
+        hours = String(currentDate.getHours()).padStart(2, "0");
+        minutes = String(currentDate.getMinutes()).padStart(2, "0");
+        seconds = String(currentDate.getSeconds()).padStart(2, "0");
+        zegarTxt.textContent = `${hours}:${minutes}:${seconds}`;
+      }, 1000);
+      // Update timer every second (only when running)
+      setInterval(() => {
+        if (isRunning) {
+          timerSeconds++;
+          const hours = Math.floor(timerSeconds / 3600);
+          const mins = Math.floor((timerSeconds % 3600) / 60);
+          const secs = timerSeconds % 60;
+          stoper.textContent = `${String(hours).padStart(2, "0")}:${String(
+            mins
+          ).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+        }
+      }, 1000);
+
+      // Update money and earnings every 100ms for smooth animation
+      setInterval(() => {
+        // Najniższa krajowa always earns (constantly)
+        totalNajnizszaEarnings += najnizszaKrajowaPerSecond * 0.1;
+        najnizszaEarnings.textContent =
+          totalNajnizszaEarnings.toFixed(2) + " zl earned (najniższa)";
+
+        // Money waste only when timer is running
+        if (isRunning) {
+          totalMoneyWasted += czynszPerSecond * studentCount * 0.1;
+          moneyWasted.textContent = totalMoneyWasted.toFixed(2) + " zl wasted";
+          // Add subtle pulse to money wasted when actively counting
+          if (Math.floor(Date.now() / 500) % 2) {
+            moneyWasted.style.transform = "scale(1.02)";
+          } else {
+            moneyWasted.style.transform = "scale(1)";
+          }
+        } else {
+          moneyWasted.style.transform = "scale(1)";
+        }
+
+        // Update comparison ratio
+        const ratio =
+          totalNajnizszaEarnings > 0
+            ? totalMoneyWasted / totalNajnizszaEarnings
+            : 0;
+
+        // Reset classes and find matching config
+        xNajnizszejKrajowej.className = "x-najnizszej-krajowej";
+
+        const config = ratioConfig.find((c) => ratio >= c.threshold);
+        const { message, color, classes } = config;
+
+        // Apply styling
+        xNajnizszejKrajowej.style.color = color;
+        classes.forEach((cls) => xNajnizszejKrajowej.classList.add(cls));
+
+        // Format ratio display based on size
+        const ratioDisplay =
+          ratio < 100
+            ? ratio.toFixed(2)
+            : ratio < 10000
+            ? ratio.toFixed(1)
+            : ratio.toFixed(0);
+
+        xNajnizszejKrajowej.innerHTML = `<small>najniższa krajowa</small>${ratioDisplay}x <small>${message}</small>`;
+      }, 100);
+
+      playBtn.addEventListener("click", () => {
+        if (!isRunning) {
+          isRunning = true;
+          playBtn.textContent = "Running...";
+          playBtn.className = "running";
+          stopBtn.textContent = "Pause";
+          stopBtn.className = "";
+        }
+      });
+      stopBtn.addEventListener("click", () => {
+        if (isRunning) {
+          isRunning = false;
+          playBtn.textContent = "Start";
+          playBtn.className = "";
+          stopBtn.textContent = "Paused";
+          stopBtn.className = "paused";
+        }
+      });
+      function updateCalculations() {
+        const czynszPerWeek = czynszPerMonth / 4.33;
+        const czynszPerSchoolDay = czynszPerWeek / 5;
+        const czynszPerHour = czynszPerSchoolDay / 7;
+        const czynszPerSecond = czynszPerHour / 3600;
+
+        moneyWastedPerH.innerHTML =
+          (czynszPerHour * studentCount).toFixed(2) +
+          " zl <small>wasted per hour!</small>";
+      }
+
+      document.querySelector(".rent").addEventListener("change", (e) => {
+        czynszPerMonth = e.target.value;
+        updateCalculations();
+      });
+      document
+        .querySelector(".studentCount")
+        .addEventListener("change", (e) => {
+          studentCount = e.target.value;
+          updateCalculations();
+        });
+    </script>
+  </body>
 </html>
